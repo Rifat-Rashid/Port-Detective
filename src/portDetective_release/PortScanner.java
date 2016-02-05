@@ -4,6 +4,7 @@ public class PortScanner {
 	
 	private int startPort;
 	private int endPort;
+	private PortData _portData;
 	
 	public PortScanner(int startPort, int endPort){
 		this.startPort = startPort;
@@ -15,9 +16,10 @@ public class PortScanner {
 			@Override
 			public void run(){
 				//begin port scan!
-				for(int i = 0; i < endPort - startPort; i++){
+				for(int i = 0; i <= endPort - startPort; i++){
 					//go through
-					
+					_portData = new PortData(i);
+					_portData.startSocket();
 				}
 			}
 		};

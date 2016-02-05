@@ -31,7 +31,6 @@ public class PortData {
 						isOpen = true;
 						s.close();
 					} catch (IOException e) {
-						e.printStackTrace();
 						isOpen = false;
 					}finally{
 						
@@ -40,11 +39,20 @@ public class PortData {
 							@Override
 							public void run(){
 								//conduct operation here
-								
+								if(isOpen){
+									launcher.list.add("Port: "
+											+ (port)
+											+ " Unoccupied");;
+								}
+								launcher.label_3.setText(STORAGE.ports_gone_through
+										+ "/"
+										+ STORAGE.ports_to_discover);
+								launcher.progressBar.setSelection(launcher.progressBar.getSelection() + 1);
+								STORAGE.ports_gone_through++;
 							}
 						};
 						//runnable UI thread: avoids thread exception!
-						Display.getDefault().asyncExec(displayRunnable);
+						Display.getDefault().syncExec(displayRunnable);
 					}
 				}
 			};

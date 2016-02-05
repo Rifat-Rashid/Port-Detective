@@ -23,11 +23,9 @@ public class launcher extends Shell {
 	private Text ip_textbox_3;
 	private Text port_textbox;
 	private Text text;
-	private static int current_element;
-	private static List list;
-	private static Label label_3;
-	private static ProgressBar progressBar;
-	private static int ports_gone_through = 0;
+	public static List list;
+	public static Label label_3;
+	public static ProgressBar progressBar;
 	private static int i;
 
 	/**
@@ -102,7 +100,7 @@ public class launcher extends Shell {
 				}
 				try {
 					progressBar.setSelection(0);
-					ports_gone_through = 0;
+					STORAGE.ports_gone_through = 0;
 					// try to convert ports into integers
 					final int startPort = Integer.valueOf(port_textbox
 							.getText().toString());
@@ -117,70 +115,13 @@ public class launcher extends Shell {
 					final ArrayList<Integer> successful_ports_list = new ArrayList<Integer>();
 					final InetAddress host_ip = InetAddress.getByName("10.187.9.36");
 					System.out.println(InetAddress.getLocalHost().getHostAddress());
-					current_element = startPort;
-					final int ports_to_discover = endPort - startPort;
+					STORAGE.ports_to_discover = endPort - startPort;
 					progressBar.setMaximum(endPort);
 					progressBar.setMinimum(startPort);
-
-					Runnable r = new Runnable() {
-						@Override
-						public void run() {
-							for (i = 0; i <= endPort - startPort; i++) {
-								Runnable a = new Runnable() {
-									// isReachable stores if port is open or not
-									boolean isReachable = false;
-									int port_num = i + startPort;
-
-									@Override
-									public void run() {
-										try {/*
-											if (host_ip.isReachable(port_num)) {
-												successful_ports_list
-														.add(port_num);
-												isReachable = true;
-											} else {
-												// do nothing :(
-											}
-											*/
-											Socket s = new Socket(host_ip, port_num);
-											successful_ports_list.add(port_num);
-											isReachable = true;
-											s.close();
-										} catch (Exception e) {
-											isReachable = false;
-										}
-
-										// ui thread
-										Runnable uiRunnable = new Runnable() {
-											@Override
-											public void run() {
-												// TODO Auto-generated method
-												// stub
-												if (isReachable) {
-													list.add("Port: "
-															+ (port_num)
-															+ " Unoccupied");
-												}
-												label_3.setText(ports_gone_through
-														+ "/"
-														+ ports_to_discover);
-												progressBar
-														.setSelection(progressBar
-																.getSelection() + 1);
-												ports_gone_through++;
-											}
-										};
-										Display.getDefault().syncExec(
-												uiRunnable);
-										isReachable = false;
-									}
-								};
-								new Thread(a).start();
-							}
-						};
-
-					};
-					new Thread(r).start();
+					STORAGE.host_IP = InetAddress.getLocalHost();
+					PortScanner scanner = new PortScanner(startPort, endPort);
+					scanner.scanPorts();
+				
 				} catch (Exception io) {
 					io.printStackTrace();
 

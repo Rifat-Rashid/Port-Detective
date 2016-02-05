@@ -118,12 +118,12 @@ public class launcher extends Shell {
 						public void run() {
 							for (i = 0; i <= endPort - startPort; i++) {
 								Runnable a = new Runnable() {
+									//isReachable stores if port is open or not
 									boolean isReachable = false;
 									int port_num = i + startPort;
 
 									@Override
 									public void run() {
-										// TODO Auto-generated method stub
 										try {
 											if (host_ip.isReachable(port_num)) {
 												successful_ports_list
@@ -133,9 +133,9 @@ public class launcher extends Shell {
 												// do nothing :(
 											}
 										} catch (IOException e) {
-											// TODO Auto-generated catch block
 											e.printStackTrace();
 										}
+										
 										// ui thread
 										Runnable uiRunnable = new Runnable() {
 											@Override

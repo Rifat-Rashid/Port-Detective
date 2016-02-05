@@ -14,7 +14,11 @@ public class PortScanner {
 		Runnable r = new Runnable(){
 			@Override
 			public void run(){
-				
+				//begin port scan!
+				for(int i = 0; i < endPort - startPort; i++){
+					//go through
+					
+				}
 			}
 		};
 		new Thread(r).start();

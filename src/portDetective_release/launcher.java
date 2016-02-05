@@ -3,6 +3,7 @@ package portDetective_release;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import org.eclipse.swt.SWT;
@@ -93,6 +94,12 @@ public class launcher extends Shell {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// send Data packet here
+				try {
+					STORAGE.host_IP = InetAddress.getLocalHost();
+				} catch (UnknownHostException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				try {
 					progressBar.setSelection(0);
 					ports_gone_through = 0;

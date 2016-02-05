@@ -1,6 +1,7 @@
 package portDetective_release;
 
-public class STORAGE {
-	//Store main vars here!
+import java.net.InetAddress;
 
+public class STORAGE {
+	public static InetAddress host_IP;
 }

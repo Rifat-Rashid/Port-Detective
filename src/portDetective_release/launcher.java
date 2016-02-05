@@ -28,7 +28,6 @@ public class launcher extends Shell {
 	private static int ports_gone_through = 0;
 	private static int i;
 
-
 	/**
 	 * Launch the application.
 	 * 
@@ -94,14 +93,13 @@ public class launcher extends Shell {
 			public void widgetSelected(SelectionEvent e) {
 				// send Data packet here
 				try {
+					progressBar.setSelection(0);
+					ports_gone_through = 0;
 					// try to convert ports into integers
 					final int startPort = Integer.valueOf(port_textbox
 							.getText().toString());
 					final int endPort = Integer.valueOf(text.getText()
 							.toString());
-					// merge 3 input boxes into single string
-					// !using string builder: dont want to create new Object
-					// each time
 					StringBuilder targetIP_string = new StringBuilder();
 					targetIP_string.append(ip_textbox_1.getText().toString()
 							+ ".");
@@ -109,26 +107,27 @@ public class launcher extends Shell {
 							+ ".");
 					targetIP_string.append(ip_textbox_3.getText().toString());
 					final ArrayList<Integer> successful_ports_list = new ArrayList<Integer>();
-					final InetAddress host_ip = InetAddress
-							.getLocalHost();
+					final InetAddress host_ip = InetAddress.getLocalHost();
 					current_element = startPort;
 					final int ports_to_discover = endPort - startPort;
 					progressBar.setMaximum(endPort);
 					progressBar.setMinimum(startPort);
-					
+
 					Runnable r = new Runnable() {
 						@Override
 						public void run() {
-							for(i = 0; i <=endPort - startPort; i++){
-								Runnable a = new Runnable(){
+							for (i = 0; i <= endPort - startPort; i++) {
+								Runnable a = new Runnable() {
 									boolean isReachable = false;
+									int port_num = i + startPort;
+
 									@Override
 									public void run() {
 										// TODO Auto-generated method stub
 										try {
-											if (host_ip.isReachable((startPort + i))) {
+											if (host_ip.isReachable(port_num)) {
 												successful_ports_list
-														.add(startPort + i);
+														.add(port_num);
 												isReachable = true;
 											} else {
 												// do nothing :(
@@ -137,66 +136,35 @@ public class launcher extends Shell {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
 										}
-										//ui thread
+										// ui thread
 										Runnable uiRunnable = new Runnable() {
 											@Override
 											public void run() {
-												// TODO Auto-generated method stub
-												if(isReachable){
-													list.add("Port: " + (startPort + i)
+												// TODO Auto-generated method
+												// stub
+												if (isReachable) {
+													list.add("Port: "
+															+ (port_num)
 															+ " Unoccupied");
 												}
 												label_3.setText(ports_gone_through
-														+ "/" + ports_to_discover);
-												progressBar.setSelection(progressBar
-														.getSelection() + 1);
+														+ "/"
+														+ ports_to_discover);
+												progressBar
+														.setSelection(progressBar
+																.getSelection() + 1);
 												ports_gone_through++;
 											}
 										};
-										Display.getDefault().asyncExec(uiRunnable);
+										Display.getDefault().asyncExec(
+												uiRunnable);
 										isReachable = false;
 									}
 								};
 								new Thread(a).start();
 							}
-							//i = 0;
-							
-							
-							/*
-							while (current_element != endPort) {
-								try {
-									if (host_ip.isReachable(current_element)) {
-										successful_ports_list
-												.add(current_element);
-										reachable = true;
-									} else {
-										// do nothing :(
-									}
-								} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-
-								Runnable uiRunnable = new Runnable() {
-									@Override
-									public void run() {
-										// TODO Auto-generated method stub
-										if(reachable){
-											list.add("Port: " + current_element
-													+ "Unoccupied");
-										}
-										label_3.setText(ports_gone_through
-												+ "/" + ports_to_discover);
-										progressBar.setSelection(progressBar
-												.getSelection() + 1);
-										current_element++;
-										ports_gone_through++;
-									}
-								};
-								Display.getDefault().syncExec(uiRunnable);
-							}
-							*/
 						};
+
 					};
 					new Thread(r).start();
 				} catch (Exception io) {

@@ -2,6 +2,7 @@ package portDetective_release;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import org.eclipse.swt.SWT;
@@ -107,7 +108,8 @@ public class launcher extends Shell {
 							+ ".");
 					targetIP_string.append(ip_textbox_3.getText().toString());
 					final ArrayList<Integer> successful_ports_list = new ArrayList<Integer>();
-					final InetAddress host_ip = InetAddress.getLocalHost();
+					final InetAddress host_ip = InetAddress.getByName("10.187.9.36");
+					System.out.println(InetAddress.getLocalHost().getHostAddress());
 					current_element = startPort;
 					final int ports_to_discover = endPort - startPort;
 					progressBar.setMaximum(endPort);
@@ -118,13 +120,13 @@ public class launcher extends Shell {
 						public void run() {
 							for (i = 0; i <= endPort - startPort; i++) {
 								Runnable a = new Runnable() {
-									//isReachable stores if port is open or not
+									// isReachable stores if port is open or not
 									boolean isReachable = false;
 									int port_num = i + startPort;
 
 									@Override
 									public void run() {
-										try {
+										try {/*
 											if (host_ip.isReachable(port_num)) {
 												successful_ports_list
 														.add(port_num);
@@ -132,10 +134,15 @@ public class launcher extends Shell {
 											} else {
 												// do nothing :(
 											}
-										} catch (IOException e) {
-											e.printStackTrace();
+											*/
+											Socket s = new Socket(host_ip, port_num);
+											successful_ports_list.add(port_num);
+											isReachable = true;
+											s.close();
+										} catch (Exception e) {
+											isReachable = false;
 										}
-										
+
 										// ui thread
 										Runnable uiRunnable = new Runnable() {
 											@Override
@@ -156,7 +163,7 @@ public class launcher extends Shell {
 												ports_gone_through++;
 											}
 										};
-										Display.getDefault().asyncExec(
+										Display.getDefault().syncExec(
 												uiRunnable);
 										isReachable = false;
 									}
@@ -201,7 +208,7 @@ public class launcher extends Shell {
 	 * Create contents of the shell.
 	 */
 	protected void createContents() {
-		setText("SWT Application");
+		setText("Open Port");
 		setSize(234, 290);
 
 	}
@@ -209,22 +216,5 @@ public class launcher extends Shell {
 	@Override
 	protected void checkSubclass() {
 		// Disable the check that prevents subclassing of SWT components
-	}
-
-	class Ports extends Thread {
-		private int port_number;
-
-		public Ports() {
-
-		}
-
-		public Ports(int port_number) {
-			this.port_number = port_number;
-		}
-
-		@Override
-		public void run() {
-
-		}
 	}
 }

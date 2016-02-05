@@ -1,5 +1,9 @@
 package portDetective_release;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.ArrayList;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -17,6 +21,13 @@ public class launcher extends Shell {
 	private Text ip_textbox_3;
 	private Text port_textbox;
 	private Text text;
+	private static int current_element;
+	private static List list;
+	private static Label label_3;
+	private static ProgressBar progressBar;
+	private static int ports_gone_through = 0;
+	private static int i;
+
 
 	/**
 	 * Launch the application.
@@ -65,10 +76,16 @@ public class launcher extends Shell {
 		label.setBounds(72, 47, 10, 15);
 		label.setText(".");
 
-		ProgressBar progressBar = new ProgressBar(this, SWT.NONE);
-		progressBar.setBounds(10, 131, 198, 17);
+		progressBar = new ProgressBar(this, SWT.NONE);
+		progressBar.setBounds(10, 131, 198, 25);
 
-		List list = new List(this, SWT.BORDER);
+		label_3 = new Label(this, SWT.NONE);
+		label_3.setAlignment(SWT.RIGHT);
+		label_3.setBounds(148, 116, 55, 15);
+		label_3.setText("0");
+		createContents();
+
+		list = new List(this, SWT.BORDER);
 		list.setBounds(10, 198, 198, 44);
 
 		Button scan_button = new Button(this, SWT.NONE);
@@ -77,23 +94,118 @@ public class launcher extends Shell {
 			public void widgetSelected(SelectionEvent e) {
 				// send Data packet here
 				try {
-					//try to convert ports into integers
-					int startPort = Integer.valueOf(port_textbox.getText()
+					// try to convert ports into integers
+					final int startPort = Integer.valueOf(port_textbox
+							.getText().toString());
+					final int endPort = Integer.valueOf(text.getText()
 							.toString());
-					int endPort = Integer.valueOf(text.getText().toString());
-					//merge 3 input boxes into single string
-					//!using string builder: dont want to create new Object each time
+					// merge 3 input boxes into single string
+					// !using string builder: dont want to create new Object
+					// each time
 					StringBuilder targetIP_string = new StringBuilder();
-					targetIP_string.append(ip_textbox_1.getText().toString() + ".");
-					targetIP_string.append(ip_textbox_2.getText().toString() + ".");
+					targetIP_string.append(ip_textbox_1.getText().toString()
+							+ ".");
+					targetIP_string.append(ip_textbox_2.getText().toString()
+							+ ".");
 					targetIP_string.append(ip_textbox_3.getText().toString());
+					final ArrayList<Integer> successful_ports_list = new ArrayList<Integer>();
+					final InetAddress host_ip = InetAddress
+							.getLocalHost();
+					current_element = startPort;
+					final int ports_to_discover = endPort - startPort;
+					progressBar.setMaximum(endPort);
+					progressBar.setMinimum(startPort);
+					
+					Runnable r = new Runnable() {
+						@Override
+						public void run() {
+							for(i = 0; i <=endPort - startPort; i++){
+								Runnable a = new Runnable(){
+									boolean isReachable = false;
+									@Override
+									public void run() {
+										// TODO Auto-generated method stub
+										try {
+											if (host_ip.isReachable((startPort + i))) {
+												successful_ports_list
+														.add(startPort + i);
+												isReachable = true;
+											} else {
+												// do nothing :(
+											}
+										} catch (IOException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+										//ui thread
+										Runnable uiRunnable = new Runnable() {
+											@Override
+											public void run() {
+												// TODO Auto-generated method stub
+												if(isReachable){
+													list.add("Port: " + (startPort + i)
+															+ " Unoccupied");
+												}
+												label_3.setText(ports_gone_through
+														+ "/" + ports_to_discover);
+												progressBar.setSelection(progressBar
+														.getSelection() + 1);
+												ports_gone_through++;
+											}
+										};
+										Display.getDefault().asyncExec(uiRunnable);
+										isReachable = false;
+									}
+								};
+								new Thread(a).start();
+							}
+							//i = 0;
+							
+							
+							/*
+							while (current_element != endPort) {
+								try {
+									if (host_ip.isReachable(current_element)) {
+										successful_ports_list
+												.add(current_element);
+										reachable = true;
+									} else {
+										// do nothing :(
+									}
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+
+								Runnable uiRunnable = new Runnable() {
+									@Override
+									public void run() {
+										// TODO Auto-generated method stub
+										if(reachable){
+											list.add("Port: " + current_element
+													+ "Unoccupied");
+										}
+										label_3.setText(ports_gone_through
+												+ "/" + ports_to_discover);
+										progressBar.setSelection(progressBar
+												.getSelection() + 1);
+										current_element++;
+										ports_gone_through++;
+									}
+								};
+								Display.getDefault().syncExec(uiRunnable);
+							}
+							*/
+						};
+					};
+					new Thread(r).start();
 				} catch (Exception io) {
 					io.printStackTrace();
 
 				}
 			}
 		});
-		scan_button.setBounds(76, 154, 66, 25);
+		scan_button.setBounds(76, 167, 66, 25);
 		scan_button.setText("Scan");
 
 		Label lblTargetIp = new Label(this, SWT.NONE);
@@ -115,11 +227,6 @@ public class launcher extends Shell {
 		lblPort.setBounds(10, 68, 60, 15);
 		lblPort.setText("Port Range::");
 
-		Label label_3 = new Label(this, SWT.NONE);
-		label_3.setAlignment(SWT.RIGHT);
-		label_3.setBounds(148, 116, 55, 15);
-		label_3.setText("0");
-		createContents();
 	}
 
 	/**
@@ -134,5 +241,22 @@ public class launcher extends Shell {
 	@Override
 	protected void checkSubclass() {
 		// Disable the check that prevents subclassing of SWT components
+	}
+
+	class Ports extends Thread {
+		private int port_number;
+
+		public Ports() {
+
+		}
+
+		public Ports(int port_number) {
+			this.port_number = port_number;
+		}
+
+		@Override
+		public void run() {
+
+		}
 	}
 }

@@ -16,9 +16,9 @@ public class PortScanner {
 			@Override
 			public void run(){
 				//begin port scan!
-				for(int i = 0; i <= endPort - startPort; i++){
+				for(int i = 0; i <=endPort - startPort + 1; i++){
 					//go through
-					_portData = new PortData(i);
+					_portData = new PortData(startPort + i);
 					_portData.startSocket();
 				}
 			}
